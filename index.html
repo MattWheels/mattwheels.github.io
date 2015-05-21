@@ -1,0 +1,215 @@
+<!--Matt Wheeler Free N' Say Spinner 2015-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <title> Freeman Says
+   </title>
+   <meta name="Fun Spinner Thingy" content="Freeman Says">
+   <meta charset="utf-8">
+	
+   <style>
+	   .silver {
+			text-align: center;
+			background-color: silver;
+			-moz-border-radius: 6px 6px 6px 6px;
+			-webkit-border-radius: 6px;  
+			border-radius: 6px 6px 6px 6px;
+		}
+		
+		.container {
+			-moz-border-radius: 6px 6px 6px 6px;
+			-webkit-border-radius: 6px;  
+			border-radius: 6px 6px 6px 6px;
+			margin-left: auto;
+			margin-right: auto;
+			width: 100%;
+			max-width: 800px;
+			background-color: #b0e0e6;
+			background: linear-gradient(to right, #FF3300 , #000000);
+			align-items: center;
+		}
+
+		.center {
+			width:100%;
+			margin: 0 auto;
+		}
+   </style>
+</head>
+
+<body>
+<div class="container">
+
+<h1 class="silver">Freeman Says</h1>
+
+<canvas class="center" id="canvas" width=750 height=750></canvas>
+
+<script>
+	
+	var canvas = document.getElementById("canvas");			//get canvas object
+	var ctx = canvas.getContext("2d");						//get canvas context
+	var radius = canvas.height /2;							//get canvas radius
+	var selection = Math.floor((Math.random() * 12) + 1);	//quote selection and initilized to first random quote
+	var spinOffset =0;										//offset to keep positions constant
+	var count= 0;											//keeps track of spinner position
+	var spinning;											//timer id to start and stop spin
+	var moving=false;										//notes if currently spinning
+	
+	ctx.translate(radius, radius);
+	ctx.save();												//save to come back to start position for drawing spinner
+	radius = radius *0.90;
+
+	//to do, switch to diffrent format to reduce page load, also convert images to vector
+	var quotes=[new Audio("sound/sucker.wav"),
+				new Audio("sound/jump.wav"),
+				new Audio("sound/coffee.wav"),
+				new Audio("sound/ticktock.wav"),
+				new Audio("sound/testchamber.wav"),
+				new Audio("sound/captain.wav"),
+				new Audio("sound/rocket.wav"),
+				new Audio("sound/general.wav"),
+				new Audio("sound/ninjas.wav"),
+				new Audio("sound/aliens.wav"),
+				new Audio("sound/yell.wav"),
+				new Audio("sound/funding.wav")];
+				
+	drawFace(ctx,radius);
+
+	drawFaces(ctx,radius);
+
+
+	canvas.onclick=function(){waitForClick()};
+
+	//starts spinning if clicked and not already spinning
+	function waitForClick(){
+	if (!moving)
+		{
+			spinning=setInterval(spin,75);
+			moving=true;
+		}
+		//document.write(count);
+	}
+
+	
+	 
+	 //method to shuffle quotes so layout is random each pageload
+		//work in progress
+	Array.prototype.shuffle = function (){
+		var i = this.length, j, temp;
+		if ( i == 0 ) return;
+		while ( --i ) {
+			j = Math.floor( Math.random() * ( i + 1 ) );
+			temp = this[i];
+			this[i] = this[j];
+			this[j] = temp;
+		}
+	};
+
+	//spin the spinner around the canvas until it reaches its selection, one rotation + selection
+	function spin(){
+		drawSpinner(ctx,radius);
+		count= count+1;
+			if (count >=selection+spinOffset+12)
+			{
+				clearInterval(spinning);
+				playQuote(selection);
+				count=0;
+				spinOffset = 12-selection;
+				selection = Math.floor((Math.random() * 12) + 1);
+				moving=false;
+			}	
+			
+	}
+
+	//play selected audio quote
+	function playQuote(selection) {
+		quotes[selection-1].play();
+	}
+
+
+
+	//draw faces around spinner	
+	function drawFaces(ctx,radius){
+		base_image = new Image();
+		base_image.src = 'images/headlogo.png';
+		start_image= new Image();
+		start_image.src='images/headlogostart.jpg';
+		start_image.onload = function(){
+			ctx.drawImage(start_image, -75, -75,150,150);
+		}	
+		base_image.onload = function(){
+		
+			for(num= 1; num < 13; num++){
+				ang = num*Math.PI /6;
+				ctx.rotate(ang);
+				ctx.translate(0, -radius*0.75);
+				ctx.rotate(-ang);
+				ctx.drawImage(base_image, -50, -50,100,100);
+				ctx.rotate(ang);
+				ctx.translate(0, radius*0.75);
+				ctx.rotate(-ang);
+			}
+		}	
+	}
+	
+	//draw spinner for each movement
+	function drawSpinner(ctx,radius){
+		base_image = new Image();
+		base_image.src = 'images/headlogostart.jpg';
+		base_image.onload = function(){
+		ctx.rotate(30*Math.PI/180);
+		ctx.drawImage(base_image, -75, -75,150,150); 
+		}
+	}
+	
+	//draw basic outline of spinner
+	function drawFace(ctx, radius) {
+		
+		//outer ring
+		ctx.beginPath();
+		ctx.arc(0, 0, radius, 0, 2*Math.PI);
+		ctx.fillStyle = 'white';
+		ctx.fill();
+		   ctx.lineWidth = radius*0.01;
+		ctx.stroke();
+		
+		//lines
+		ctx.rotate(15*Math.PI/180);
+		for (i=0;i<12;i++)
+		{
+			
+			ctx.beginPath(0,0);
+			ctx.moveTo(0,radius*.5);
+			ctx.lineWidth=radius*.01;
+			ctx.lineTo(0, radius);
+			ctx.rotate(30*Math.PI/180);
+			ctx.stroke();
+		}
+		ctx.rotate(255*Math.PI/180);
+		
+		
+		
+		//inner ring
+		ctx.beginPath();
+		ctx.arc(0,0, radius*0.5,0,2*Math.PI);
+		ctx.lineWidth = radius*0.01;
+		ctx.stroke();
+		//middle dot
+		ctx.beginPath();
+		ctx.arc(0, 0, radius*0.01, 0, 2*Math.PI);
+		ctx.fillStyle = '#333';
+		ctx.fill();
+		ctx.restore();		//restore to save to return path to center
+	}
+	
+	
+</script>
+	<div>
+		<p class="silver">Free N' Say Created by Matt Wheeler; With thanks to Freeman's Mind, Created Ross Scott 
+		<!--aknowlagement link taken out to show project-->
+		<!--<a href="http://www.accursedfarms.com" alt="accursed farms">AccursedFarms.com</a>--></p>
+	</div>
+
+</div>
+
+</body>
+</html>
